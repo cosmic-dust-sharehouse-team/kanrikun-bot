@@ -21,6 +21,12 @@ const emojiMessages = {
   "1141397221930188841": "お風呂の清掃をしました！",
   "1141399150097875015": "炊飯をしました！",
   "1141398417080324116": "洗濯をしました！",
+  "1141400048077373531": "トイレの清掃をしました！",
+  "1141400616153919629": "ゴミ出し（資源ごみ）をしました！",
+  "1141400655999811774": "ゴミ出し（燃えるごみ）をしました！",
+  "1141400655999811774": "ゴミ出し（燃えるごみ）をしました！",
+  "1141512114591244438": "窓ガラスの清掃をしました！",
+  "1141401117050286270": "フィルターの交換をしました！",
 };
 
 client.once("ready", async () => {
@@ -70,6 +76,16 @@ client.on("messageReactionAdd", async (reaction, user) => {
           `Failed to send an embed message to the target channel: ${err.message}`
         );
       });
+  }
+});
+
+client.on("messageCreate", async (message) => {
+  if (message.channel.id !== monitoredChannelId) return;
+
+  const monitoredChannel = client.channels.cache.get(monitoredChannelId);
+  if (monitoredChannel && monitoredChannel.isText()) {
+    await monitoredChannel.messages.fetch({ limit: 10 });
+    console.log("Fetched the last 10 messages from the monitored channel.");
   }
 });
 
