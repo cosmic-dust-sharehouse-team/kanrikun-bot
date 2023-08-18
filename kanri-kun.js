@@ -73,6 +73,16 @@ client.on("messageReactionAdd", async (reaction, user) => {
   }
 });
 
+client.on("messageCreate", async (message) => {
+  if (message.channel.id !== monitoredChannelId) return;
+
+  const monitoredChannel = client.channels.cache.get(monitoredChannelId);
+  if (monitoredChannel && monitoredChannel.isText()) {
+    await monitoredChannel.messages.fetch({ limit: 10 });
+    console.log("Fetched the last 10 messages from the monitored channel.");
+  }
+});
+
 function getRandomPraise() {
   const praises = Object.values(homekotoba);
   return praises[Math.floor(Math.random() * praises.length)];
