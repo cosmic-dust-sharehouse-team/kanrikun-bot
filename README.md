@@ -3,7 +3,7 @@ The `kanrikun-bot` is a Discord bot designed for facility management tasks. Util
 
 ## How to Use
 Before running the bot, you'll need to set up your Discord token.
-### Step 0: Install discord.js and notion-sdk-js
+### Step 0: Install discord.js
 Install the recommended version 13 of discord.js to your local repository.
 ```
 npm install discord.js@v13-lts
