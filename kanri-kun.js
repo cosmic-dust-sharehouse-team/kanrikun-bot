@@ -7,6 +7,7 @@ const client = new Client({
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
     Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+    Intents.FLAGS.GUILD_MEMBERS,
   ],
 });
 
@@ -29,31 +30,62 @@ const emojiMessages = {
   "1141401117050286270": "フィルターの交換をしました！",
 };
 
-client.once("ready", async () => {
-  console.log("Bot is online!");
+function initializeBot() {
+  client.once("ready", async () => {
+    console.log("Bot is online!");
+    fetchLatestMessagesFromMonitoredChannel();
+  });
 
-  const monitoredChannel = client.channels.cache.get(monitoredChannelId);
+  client.on("guildMemberAdd", handleNewMember);
+  client.on("messageReactionAdd", handleReactionAdd);
+  client.on("messageCreate", handleNewMessage);
+  client.login(token.DISCORD_BOT_TOKEN);
+}
+
+function handleNewMember(member) {
+  const defaultRoleId = token.DISCORD_ROLE_ID;
+
+  member.roles
+    .add(defaultRoleId)
+    .then(() => {
+      console.log(
+        `Added the default role to the new member: ${member.user.tag}`
+      );
+    })
+    .catch((err) => {
+      console.error(
+        `Failed to add the default role to the new member: ${err.message}`
+      );
+    });
+}
+
+function fetchLatestMessagesFromMonitoredChannel() {
+  const monitoredChannel = client.channels.cache.get(
+    token.MONITORED_DISCORD_CH_ID
+  );
   if (monitoredChannel && monitoredChannel.isText()) {
-    await monitoredChannel.messages.fetch({ limit: 10 });
+    monitoredChannel.messages.fetch({ limit: 10 });
     console.log("Fetched the last 10 messages from the monitored channel.");
   }
-});
+}
 
-client.on("messageReactionAdd", async (reaction, user) => {
+function handleReactionAdd(reaction, user) {
   if (
     user.bot ||
-    reaction.message.channel.id !== monitoredChannelId ||
+    reaction.message.channel.id !== token.MONITORED_DISCORD_CH_ID ||
     !emojiMessages[reaction.emoji.id]
   )
     return;
 
-  // リアクションの検知ログ
   console.log(
     `Detected reaction: User ${user.tag} reacted with ${reaction.emoji.name} to a message in the monitored channel.`
   );
+  sendEmbedMessageOnReaction(reaction, user);
+}
 
+function sendEmbedMessageOnReaction(reaction, user) {
   const randomPraise = getRandomPraise();
-  const targetChannel = client.channels.cache.get(targetChannelId);
+  const targetChannel = client.channels.cache.get(token.TARGET_DISCORD_CH_ID);
   const customMessage = emojiMessages[reaction.emoji.id];
 
   const embed = new MessageEmbed()
@@ -68,7 +100,6 @@ client.on("messageReactionAdd", async (reaction, user) => {
     targetChannel
       .send({ embeds: [embed] })
       .then((message) => {
-        // 送信したメッセージの内容全体をログに出力
         console.log(`Sent message: ${message.embeds[0].description}`);
       })
       .catch((err) => {
@@ -77,21 +108,16 @@ client.on("messageReactionAdd", async (reaction, user) => {
         );
       });
   }
-});
+}
 
-client.on("messageCreate", async (message) => {
-  if (message.channel.id !== monitoredChannelId) return;
-
-  const monitoredChannel = client.channels.cache.get(monitoredChannelId);
-  if (monitoredChannel && monitoredChannel.isText()) {
-    await monitoredChannel.messages.fetch({ limit: 10 });
-    console.log("Fetched the last 10 messages from the monitored channel.");
-  }
-});
+function handleNewMessage(message) {
+  if (message.channel.id !== token.MONITORED_DISCORD_CH_ID) return;
+  fetchLatestMessagesFromMonitoredChannel();
+}
 
 function getRandomPraise() {
   const praises = Object.values(homekotoba);
   return praises[Math.floor(Math.random() * praises.length)];
 }
 
-client.login(token.DISCORD_BOT_TOKEN);
+initializeBot();
