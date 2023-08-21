@@ -57,6 +57,18 @@ function handleNewMember(member) {
         `Failed to add the default role to the new member: ${err.message}`
       );
     });
+
+  const welcomeMessage = `あなたのuserIdは\`${member.id}\`です。\nこれはTypeformでの入力に使用します。`;
+  member
+    .send(welcomeMessage)
+    .then(() => {
+      console.log(`Sent a welcome message to ${member.user.tag}`);
+    })
+    .catch((err) => {
+      console.error(
+        `Failed to send a welcome message to ${member.user.tag}: ${err.message}`
+      );
+    });
 }
 
 function fetchLatestMessagesFromMonitoredChannel() {
