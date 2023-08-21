@@ -58,7 +58,7 @@ function handleNewMember(member) {
       );
     });
 
-  const welcomeMessage = `あなたのuserIdは\`${member.id}\`です。\nこれはTypeformでの入力に使用します。`;
+  const welcomeMessage = `あなたのuserIdは\`${member.id}\`です。\nこれはTypeformでの入力に使用します。数値をそのまま貼り付けてください。`;
   member
     .send(welcomeMessage)
     .then(() => {
